@@ -1,0 +1,64 @@
+http://placehold.it/800x600/ff00ff/00ff00?text=Awesome
+
+Buy Items from sellers and store them untill a buyer wants to buy them. There will be many different items, so that storage place will be a limiting factor.
+
+Can you deny buying stuff?
+Can you deny selling stuff?
+Can you destroy stuff in storage?
+Upgrades for Storage Space, parallel queues?
+Levels that change the number of items/store layout, or one endless game with difficulty curve?
+
+Favourite for now:
+    - no denying to buy things
+    - no destroying things
+    - buyers leave if not served in time
+    - loose condition: 5 buyers leave
+    - more different items over time, no win condition
+
+Must have
+
+    - Sellers
+        - Come to Store one by one
+        - Each sells one item
+        - Form 1 queue of length 5 with 2 heads (6 people in total)
+        - Items of entire queue are visible
+        - Player can decide which item to buy    
+
+    - Buyers
+        - Come to Store one by one
+        - Each buys one item, if available
+        - Form 1 queue of length 5 with 1 head (5 people in total)
+        - Wishes of entire queue are visible
+        - Player has to actively select the item from the Store (?)
+        - Will leave if item is not served for a certain time
+
+    - Store
+        - Has 10 shelves
+        - No buying items when shelves are full
+        - Allows selecting the item to be sold
+
+    - Items
+        - 15 Item types, properly named
+        - Retrieve random item,
+            - start with 3 options
+            - add one everytime 15 items where processed
+            - generate the new one immediately when it becomes available
+
+    - Gamestate
+        - Generate buyers and sellers (queues start empty, but will fill quickly. 1/second each)
+        - Count lost buyers
+        - End Game when 5 buyers are lost
+
+Should have
+
+    - Score keeping
+    - Item pictures
+    - Store graphics
+    - Buyer/Seller graphics
+
+Nice to have
+
+    - Item values
+    - Store Upgrades (more queue heads, more storage)
+    - More item types    
+    - Item sizes
