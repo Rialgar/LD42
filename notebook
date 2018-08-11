@@ -48,7 +48,7 @@ Must have
         X Generate buyers and sellers (queues start empty, but will fill quickly. 1 / 3seconds each)
         - Count lost buyers
         - End Game when 5 buyers are lost
-        - Score keeping
+        X Score keeping
 
     - When one queue head is removed, the others do not change. It is refilled from queue.  
     - Responsive layout    
@@ -59,6 +59,7 @@ Should have
     - Item pictures
     - Store graphics
     - Buyer/Seller graphics
+    - Improved RNG
 
 Nice to have
 

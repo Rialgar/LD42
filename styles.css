@@ -5,7 +5,28 @@
 
 html, body {
     width: 100%;
-    height: 100%;       
+    height: 100%;
+    font-size: 2vh;
+}
+
+#scores {
+    position: absolute;
+    text-align: right;
+    top: 0;
+    right: 0;
+    padding-top: 1vh;
+    padding-right: 1vw;
+    font-size: 300%;
+}
+
+#lives {
+    position: absolute;
+    text-align: left;
+    top: 0;
+    left: 0;
+    padding-top: 1vh;
+    padding-left: 1vw;
+    font-size: 300%;
 }
 
 #sellers {
@@ -17,7 +38,7 @@ html, body {
     margin-bottom: 1vh;
     flex-direction: row;
     flex-wrap: wrap-reverse;
-    background-color: black;
+    background-color: grey;
 }
 
 #buyers {
@@ -30,22 +51,27 @@ html, body {
     flex-direction: row;
     flex-wrap: wrap;
 
-    background-color: black;
+    background-color: grey;
 }
 
 div.item {
+    box-sizing: border-box;
     border-radius: 4vh;
     line-height: 7vh;
-    height: 7vh;
-    font-size: 2vh;
+    height: 7vh;    
     width: 9vw;    
     text-align: center;
     background-color: white;
+    border: #333333 2px solid;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     user-select: none;
     cursor: pointer;
+}
+
+div.item.empty {
+    background-color: gray;
 }
 
 #sellers>div.item, #buyers>div.item {
@@ -55,7 +81,7 @@ div.item {
     margin-bottom: .5vh;
 }
 
-#sellers>div.item:first-child, #sellers>div.item:nth-child(2) {
+#sellers>div.item:first-child, #sellers>div.item:nth-child(2), #buyers>div.item:first-child, #buyers>div.item:nth-child(2) {
     margin-left: .5vw;
     margin-right: .5vw;
 }
