@@ -52,7 +52,7 @@ Must have
 
     X Improved RNG (Tetris RNG)
     X When one queue head is removed, the others do not change. It is refilled from queue.
-    - Responsive layout
+    X Responsive layout
 
 Should have
         

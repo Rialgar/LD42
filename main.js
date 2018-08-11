@@ -97,57 +97,74 @@ window.addEventListener('load', () => {
         return -1;
     };
 
-    const buyItem = seller => {
-        const index = gamestate.sellers.indexOf(seller);
-        if (index >= 0 && index < ACTIVE_SELLERS && gamestate.sellers.length >= index) {
+    const updateQueue = type => {
+        const elements = gamestate.dom[type].children;
+        const queue = gamestate[type];
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
+            if (i < queue.length) {
+                el.textContent = queue[i].item.name;
+                el.classList.remove('empty');
+                if (typeof (queue[i].left) === 'number') {
+                    const percentage = queue[i].left / BUYER_TIME * 100;
+                    el.style.background = `linear-gradient(white, white ${percentage}%, red ${percentage}%, red)`;
+                }
+            } else {
+                el.textContent = '';
+                el.classList.add('empty');
+                el.style.background = '';
+            }
+        }
+    }
+
+    const buyItem = sellerIndex => {
+        if (sellerIndex >= 0 && sellerIndex < ACTIVE_SELLERS && gamestate.sellers[sellerIndex]) {
+            const item = gamestate.sellers[sellerIndex].item;
             storeIndex = getFreeStoreIndex();
             if (storeIndex >= 0) {
-                gamestate.sellers.splice(index, 1);
-                gamestate.store[storeIndex] = seller.item;
+                gamestate.sellers.splice(sellerIndex, 1);
+                gamestate.store[storeIndex] = item;
                 gamestate.itemsBought++;
                 gamestate.times.bought = gamestate.times.running;
 
                 const itemDom = gamestate.dom.store.children[storeIndex];
                 itemDom.classList.remove('empty');
-                itemDom.textContent = seller.item.name;
+                itemDom.textContent = item.name;
 
-                gamestate.dom.sellers.removeChild(seller.dom);
-
-                for (let swap = Math.min(gamestate.sellers.length, ACTIVE_SELLERS) - 1; swap > index; swap--) {
+                for (let swap = Math.min(gamestate.sellers.length, ACTIVE_SELLERS) - 1; swap > sellerIndex; swap--) {
                     const later = gamestate.sellers[swap];
                     const earlier = gamestate.sellers[swap - 1];
                     gamestate.sellers[swap] = earlier;
                     gamestate.sellers[swap - 1] = later;
-                    gamestate.dom.sellers.insertBefore(later.dom, earlier.dom);
                 }
+                updateQueue('sellers');
             }
         }
     }
 
-    const sellItem = index => {
-        if (index >= 0 && index <= MAX_STORE && gamestate.store[index]) {
-            const item = gamestate.store[index];
-            const dom = gamestate.dom.store.children[index];
+    const sellItem = storeIndex => {
+        if (storeIndex >= 0 && storeIndex <= MAX_STORE && gamestate.store[storeIndex]) {
+            const item = gamestate.store[storeIndex];
             for (let buyerIndex = 0; buyerIndex < ACTIVE_BUYERS; buyerIndex++) {
                 const buyer = gamestate.buyers[buyerIndex];
                 if (buyer && buyer.item === item) {
                     gamestate.buyers.splice(buyerIndex, 1);
-                    gamestate.store[index] = null;
+                    gamestate.store[storeIndex] = null;
                     gamestate.itemsSold++;
                     gamestate.times.sold = gamestate.times.running;
 
-                    dom.textContent = '';
-                    dom.classList.add('empty');
+                    const itemDom = gamestate.dom.store.children[storeIndex];
+                    itemDom.textContent = '';
+                    itemDom.classList.add('empty');
 
-                    buyer.dom.parentElement.removeChild(buyer.dom);
-
-                    for (let swap = Math.min(gamestate.buyers.length, ACTIVE_BUYERS) - 1; swap > index; swap--) {
+                    for (let swap = Math.min(gamestate.buyers.length, ACTIVE_BUYERS) - 1; swap > buyerIndex; swap--) {
                         const later = gamestate.buyers[swap];
                         const earlier = gamestate.buyers[swap - 1];
                         gamestate.buyers[swap] = earlier;
                         gamestate.buyers[swap - 1] = later;
-                        gamestate.dom.buyers.insertBefore(later.dom, earlier.dom);
                     }
+                    updateQueue('buyers');
+                    break;
                 }
             }
 
@@ -160,53 +177,57 @@ window.addEventListener('load', () => {
         div.addEventListener('click', (index => () => sellItem(index))(i))
         gamestate.dom.store.appendChild(div);
     }
+    for (let i = 0; i < MAX_SELLERS; i++) {
+        const div = document.createElement('div');
+        div.classList.add('item');
+        div.addEventListener('click', (index => () => buyItem(index))(i))
+        gamestate.dom.sellers.appendChild(div);
+    }
+    for (let i = 0; i < MAX_BUYERS; i++) {
+        const div = document.createElement('div');
+        div.classList.add('item');
+        gamestate.dom.buyers.appendChild(div);
+    }
 
     const makeSeller = () => {
         if (gamestate.sellers.length < MAX_SELLERS) {
             const seller = {
-                item: getItem('sellers'),
-                dom: document.createElement('div')
+                item: getItem('sellers')
             }
-
-            seller.dom.classList.add('item');
-            seller.dom.textContent = seller.item.name;
-            seller.dom.addEventListener('click', () => buyItem(seller));
-
-            gamestate.dom.sellers.appendChild(seller.dom);
             gamestate.sellers.push(seller);
             gamestate.times.sellerCreated = gamestate.times.running;
+            updateQueue('sellers');
         }
     }
     const makeBuyer = () => {
         if (gamestate.buyers.length < MAX_BUYERS) {
             const buyer = {
                 item: getItem('buyers'),
-                dom: document.createElement('div'),
                 created: gamestate.times.running,
                 left: BUYER_TIME
             }
-
-            buyer.dom.classList.add('item');
-            buyer.dom.textContent = buyer.item.name;
-
-            gamestate.dom.buyers.appendChild(buyer.dom);
             gamestate.buyers.push(buyer);
             gamestate.times.buyerCreated = buyer.created;
+            updateQueue('buyers');
         }
     }
 
     const updateBuyers = now => {
         gamestate.buyers.forEach(buyer => {
             buyer.left = BUYER_TIME - (now - buyer.created);
-            const percentage = buyer.left / BUYER_TIME * 100;
-            buyer.dom.style.background = `linear-gradient(white, white ${percentage}%, red ${percentage}%, red)`;
         });
 
         const toRemove = gamestate.buyers.filter(buyer => buyer.left < 0);
-        gamestate.lives -= toRemove.length;
-        toRemove.forEach(buyer => buyer.dom.parentElement.removeChild(buyer.dom));
+        if (toRemove.length > 0) {
+            gamestate.lives -= toRemove.length;
 
-        gamestate.buyers = gamestate.buyers.filter(buyer => buyer.left >= 0);
+            toRemove.forEach(buyer => gamestate.upcoming.buyers.push(buyer.item));
+            gamestate.upcoming.buyers.shuffle();
+
+            gamestate.buyers = gamestate.buyers.filter(buyer => buyer.left >= 0);
+        }
+
+        updateQueue('buyers');
     }
 
     const init = () => {
@@ -231,12 +252,9 @@ window.addEventListener('load', () => {
             running: 0
         }
 
-        while (gamestate.dom.sellers.childElementCount > 0) {
-            gamestate.dom.sellers.removeChild(gamestate.dom.sellers.firstChild);
-        }
-        while (gamestate.dom.buyers.childElementCount > 0) {
-            gamestate.dom.buyers.removeChild(gamestate.dom.buyers.firstChild);
-        }
+        updateQueue('sellers');
+        updateQueue('buyers');
+
         Array.prototype.forEach.call(gamestate.dom.store.children, el => {
             el.classList.add('empty');
             el.textContent = '';

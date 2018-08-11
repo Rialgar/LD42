@@ -29,37 +29,12 @@ html, body {
     font-size: 300%;
 }
 
-#sellers {
-    display: flex;
-    width: 20vw;
-    height: 40vh;
-    margin-left: 40vw;
-    margin-top: 1vh;
-    margin-bottom: 1vh;
-    flex-direction: row;
-    flex-wrap: wrap-reverse;
-    background-color: grey;
-}
-
-#buyers {
-    display: flex;
-    width: 20vw;
-    height: 40vh;
-    margin-left: 40vw;
-    margin-top: 1vh;
-    margin-bottom: 1vh;
-    flex-direction: row;
-    flex-wrap: wrap;
-
-    background-color: grey;
-}
-
 div.item {
     box-sizing: border-box;
     border-radius: 4vh;
     line-height: 7vh;
-    height: 7vh;    
-    width: 9vw;    
+    height: 7vh;
+    width: 18vw;
     text-align: center;
     background-color: white;
     border: #333333 2px solid;
@@ -74,16 +49,35 @@ div.item.empty {
     background-color: gray;
 }
 
+#sellers, #buyers {
+    display: flex;
+    width: 40vw;    
+    height: 40vh;
+    margin-left: 30vw;
+    margin-top: 1vh;
+    margin-bottom: 1vh;
+    flex-direction: row;    
+    background-color: grey;
+}
+
+#sellers {
+    flex-wrap: wrap-reverse;
+}
+
+#buyers {
+    flex-wrap: wrap;
+}
+
 #sellers>div.item, #buyers>div.item {
-    margin-left: 5.5vw;
-    margin-right: 5.5vw;
+    margin-left: 11vw;
+    margin-right: 11vw;
     margin-top: .5vh;
     margin-bottom: .5vh;
 }
 
 #sellers>div.item:first-child, #sellers>div.item:nth-child(2), #buyers>div.item:first-child, #buyers>div.item:nth-child(2) {
-    margin-left: .5vw;
-    margin-right: .5vw;
+    margin-left: 1vw;
+    margin-right: 1vw;
 }
 
 #store {
@@ -100,6 +94,6 @@ div.item.empty {
 #store>div.item {
     margin-left: .3vw;
     margin-right: .3vw;
-    margin-top: 4.5vh;
-    margin-bottom: 4.5vh;
+    margin-top: .5vh;
+    margin-bottom: .5vh;
 }
