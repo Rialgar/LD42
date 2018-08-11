@@ -44,6 +44,8 @@ div.item {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    user-select: none;
+    cursor: pointer;
 }
 
 #sellers>div.item, #buyers>div.item {
