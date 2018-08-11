@@ -17,47 +17,52 @@ Favourite for now:
 
 Must have
 
-    - Sellers
-        - Come to Store one by one
-        - Each sells one item
-        - Form 1 queue of length 5 with 2 heads (6 people in total)
-        - Items of entire queue are visible
-        - Player can decide which item to buy    
+    X Sellers
+        X Come to Store one by one 
+        X Each sells one item
+        X Form 1 queue of length 5 with 2 heads (6 people in total)
+        X Items of entire queue are visible
+        X Player can decide which head item to buy
 
     - Buyers
-        - Come to Store one by one
-        - Each buys one item, if available
-        - Form 1 queue of length 5 with 1 head (5 people in total)
-        - Wishes of entire queue are visible
-        - Player has to actively select the item from the Store (?)
+        X Come to Store one by one
+        X Each buys one item, if available
+        X Form 1 queue of length 5 with 1 head (5 people in total)
+        X Wishes of entire queue are visible
+        X Player has to actively select the item from the Store
         - Will leave if item is not served for a certain time
 
-    - Store
-        - Has 10 shelves
-        - No buying items when shelves are full
-        - Allows selecting the item to be sold
+    X Store
+        X Has 10 shelves
+        X No buying items when shelves are full
+        X Allows selecting the item to be sold
 
     - Items
-        - 15 Item types, properly named
-        - Retrieve random item,
-            - start with 3 options
-            - add one everytime 15 items where processed
-            - generate the new one immediately when it becomes available
+        X 15 Item types, properly named
+        X Retrieve random item,
+            X start with 3 options
+            X add one everytime 15 items where processed (sold)
+            X generate the new one immediately when it becomes available
 
     - Gamestate
-        - Generate buyers and sellers (queues start empty, but will fill quickly. 1/second each)
+        X Generate buyers and sellers (queues start empty, but will fill quickly. 1 / 3seconds each)
         - Count lost buyers
         - End Game when 5 buyers are lost
+        - Score keeping
+
+    - When one queue head is removed, the others do not change. It is refilled from queue.  
+    - Responsive layout    
 
 Should have
-
-    - Score keeping
+        
+    - Item Transitions
     - Item pictures
     - Store graphics
     - Buyer/Seller graphics
 
 Nice to have
 
+    - High Score Server
     - Item values
     - Store Upgrades (more queue heads, more storage)
     - More item types    
