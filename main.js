@@ -46,7 +46,7 @@ window.addEventListener('load', () => {
         { name: 'Mango' },
         { name: 'Melon' },
         { name: 'Pumpkin' }
-    ].shuffle();
+    ];
 
     const getItem = () => ITEMS[Math.floor(Math.random() * gamestate.itemTypes)];
 
@@ -180,16 +180,18 @@ window.addEventListener('load', () => {
             sold: 0
         }
 
-        while (gamestate.dom.buyers.childElementCount > 0) {
-            gamestate.dom.buyers.removeChild(gamestate.dom.buyers.firstChild);
-        }
         while (gamestate.dom.sellers.childElementCount > 0) {
+            gamestate.dom.sellers.removeChild(gamestate.dom.sellers.firstChild);
+        }
+        while (gamestate.dom.buyers.childElementCount > 0) {
             gamestate.dom.buyers.removeChild(gamestate.dom.buyers.firstChild);
         }
         Array.prototype.forEach.call(gamestate.dom.store.children, el => {
             el.classList.add('empty');
             el.textContent = '';
         });
+
+        ITEMS.shuffle();
 
         for (let i = 0; i < 3; i++) {
             makeSeller();
@@ -198,6 +200,11 @@ window.addEventListener('load', () => {
     }
 
     init();
+
+    const loose = () => {
+        alert(`You lost, but you successfully resold ${gamestate.itemsSold} items. Press OK to restart.`);
+        init();
+    }
 
     let last = Date.now();
     const step = () => {
@@ -216,6 +223,10 @@ window.addEventListener('load', () => {
         }
 
         updateBuyers(now);
+
+        if (gamestate.lives <= 0) {
+            loose();
+        }
 
         gamestate.dom.scores.textContent = gamestate.itemsSold;
         gamestate.dom.lives.textContent = gamestate.lives;

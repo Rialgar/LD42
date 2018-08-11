@@ -24,42 +24,44 @@ Must have
         X Items of entire queue are visible
         X Player can decide which head item to buy
 
-    - Buyers
+    X Buyers
         X Come to Store one by one
         X Each buys one item, if available
         X Form 1 queue of length 5 with 1 head (5 people in total)
         X Wishes of entire queue are visible
         X Player has to actively select the item from the Store
-        - Will leave if item is not served for a certain time
+        X Will leave if item is not served for a certain time
 
     X Store
         X Has 10 shelves
         X No buying items when shelves are full
         X Allows selecting the item to be sold
 
-    - Items
+    X Items
         X 15 Item types, properly named
         X Retrieve random item,
             X start with 3 options
             X add one everytime 15 items where processed (sold)
             X generate the new one immediately when it becomes available
 
-    - Gamestate
+    X Gamestate
         X Generate buyers and sellers (queues start empty, but will fill quickly. 1 / 3seconds each)
-        - Count lost buyers
-        - End Game when 5 buyers are lost
+        X Count lost buyers
+        X End Game when 5 buyers are lost
         X Score keeping
 
+    - Improved RNG (Tetris RNG)
     - When one queue head is removed, the others do not change. It is refilled from queue.  
-    - Responsive layout    
+    - Responsive layout
 
 Should have
         
     - Item Transitions
     - Item pictures
+    - Remaining lives graphics
+    - Score graphics
     - Store graphics
-    - Buyer/Seller graphics
-    - Improved RNG
+    - Buyer/Seller graphics    
 
 Nice to have
 
