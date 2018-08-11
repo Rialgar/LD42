@@ -56,7 +56,7 @@ Must have
 
 Should have
         
-    - Item Transitions
+    - Item Transitions / Sell Animation
     - Item pictures
     - Remaining lives graphics
     - Score graphics
@@ -66,6 +66,7 @@ Should have
 Nice to have
 
     - High Score Server
+    - More Nuanced Scoring (include time left)
     - Item values
     - Store Upgrades (more queue heads, more storage)
     - More item types    
