@@ -111,7 +111,15 @@ window.addEventListener('load', () => {
                 itemDom.classList.remove('empty');
                 itemDom.textContent = seller.item.name;
 
-                seller.dom.parentElement.removeChild(seller.dom);
+                gamestate.dom.sellers.removeChild(seller.dom);
+
+                for (let swap = Math.min(gamestate.sellers.length, ACTIVE_SELLERS) - 1; swap > index; swap--) {
+                    const later = gamestate.sellers[swap];
+                    const earlier = gamestate.sellers[swap - 1];
+                    gamestate.sellers[swap] = earlier;
+                    gamestate.sellers[swap - 1] = later;
+                    gamestate.dom.sellers.insertBefore(later.dom, earlier.dom);
+                }
             }
         }
     }
@@ -123,15 +131,23 @@ window.addEventListener('load', () => {
             for (let buyerIndex = 0; buyerIndex < ACTIVE_BUYERS; buyerIndex++) {
                 const buyer = gamestate.buyers[buyerIndex];
                 if (buyer && buyer.item === item) {
+                    gamestate.buyers.splice(buyerIndex, 1);
                     gamestate.store[index] = null;
+                    gamestate.itemsSold++;
+                    gamestate.times.sold = gamestate.times.running;
+
                     dom.textContent = '';
                     dom.classList.add('empty');
 
-                    gamestate.buyers.splice(buyerIndex, 1);
                     buyer.dom.parentElement.removeChild(buyer.dom);
 
-                    gamestate.itemsSold++;
-                    gamestate.times.sold++;
+                    for (let swap = Math.min(gamestate.buyers.length, ACTIVE_BUYERS) - 1; swap > index; swap--) {
+                        const later = gamestate.buyers[swap];
+                        const earlier = gamestate.buyers[swap - 1];
+                        gamestate.buyers[swap] = earlier;
+                        gamestate.buyers[swap - 1] = later;
+                        gamestate.dom.buyers.insertBefore(later.dom, earlier.dom);
+                    }
                 }
             }
 
