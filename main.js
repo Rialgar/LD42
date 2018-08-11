@@ -16,6 +16,26 @@ window.addEventListener('load', () => {
             sellers: document.getElementById('sellers'),
             scores: document.getElementById('scores'),
             lives: document.getElementById('lives')
+        },
+        buyers: [],
+        store: [],
+        sellers: [],
+        typeCount: 3,
+        itemsBought: 0,
+        itemsSold: 0,
+        lives: 5,
+
+        upcoming: {
+            buyers: [],
+            sellers: []
+        },
+
+        times: {
+            sellerCreated: 0,
+            buyerCreated: 0,
+            bought: 0,
+            sold: 0,
+            running: 0
         }
     }
 
@@ -48,7 +68,25 @@ window.addEventListener('load', () => {
         { name: 'Pumpkin' }
     ];
 
-    const getItem = () => ITEMS[Math.floor(Math.random() * gamestate.itemTypes)];
+    const getItem = (type) => {
+        if (gamestate.upcoming[type].length === 0) {
+            const items = ITEMS.slice(0, gamestate.typeCount);
+            gamestate.upcoming[type] = items.concat(items);
+            gamestate.upcoming[type].shuffle();
+            gamestate.upcoming[type].typeCount = gamestate.typeCount;
+        }
+
+        const upcoming = gamestate.upcoming[type];
+        while (upcoming.typeCount < gamestate.typeCount) {
+            const newItem = ITEMS[upcoming.typeCount];
+            upcoming.push(newItem);
+            upcoming.push(newItem);
+            upcoming.shuffle();
+            upcoming.typeCount++;
+        }
+
+        return upcoming.pop();
+    }
 
     const getFreeStoreIndex = () => {
         for (let i = 0; i < MAX_STORE; i++) {
@@ -67,7 +105,7 @@ window.addEventListener('load', () => {
                 gamestate.sellers.splice(index, 1);
                 gamestate.store[storeIndex] = seller.item;
                 gamestate.itemsBought++;
-                gamestate.times.bought = Date.now();
+                gamestate.times.bought = gamestate.times.running;
 
                 const itemDom = gamestate.dom.store.children[storeIndex];
                 itemDom.classList.remove('empty');
@@ -107,19 +145,10 @@ window.addEventListener('load', () => {
         gamestate.dom.store.appendChild(div);
     }
 
-    let lastTypeCount = gamestate.itemTypes;
     const makeSeller = () => {
         if (gamestate.sellers.length < MAX_SELLERS) {
-            let item;
-            if (lastTypeCount !== gamestate.itemTypes) {
-                lastTypeCount = gamestate.itemTypes;
-                item = ITEMS[lastTypeCount - 1];
-            } else {
-                item = getItem();
-            }
-
             const seller = {
-                item,
+                item: getItem('sellers'),
                 dom: document.createElement('div')
             }
 
@@ -129,15 +158,15 @@ window.addEventListener('load', () => {
 
             gamestate.dom.sellers.appendChild(seller.dom);
             gamestate.sellers.push(seller);
-            gamestate.times.sellerCreated = Date.now();
+            gamestate.times.sellerCreated = gamestate.times.running;
         }
     }
     const makeBuyer = () => {
         if (gamestate.buyers.length < MAX_BUYERS) {
             const buyer = {
-                item: getItem(),
+                item: getItem('buyers'),
                 dom: document.createElement('div'),
-                created: Date.now(),
+                created: gamestate.times.running,
                 left: BUYER_TIME
             }
 
@@ -168,16 +197,22 @@ window.addEventListener('load', () => {
         gamestate.buyers = [];
         gamestate.store = [];
         gamestate.sellers = [];
-        gamestate.itemTypes = 3;
+        gamestate.typeCount = 3;
         gamestate.itemsBought = 0;
         gamestate.itemsSold = 0;
         gamestate.lives = 5;
+
+        gamestate.upcoming = {
+            buyers: [],
+            sellers: []
+        };
 
         gamestate.times = {
             sellerCreated: 0,
             buyerCreated: 0,
             bought: 0,
-            sold: 0
+            sold: 0,
+            running: 0
         }
 
         while (gamestate.dom.sellers.childElementCount > 0) {
@@ -209,20 +244,22 @@ window.addEventListener('load', () => {
     let last = Date.now();
     const step = () => {
         const now = Date.now();
-        const delta = now - last;
+        const delta = Math.min(now - last, 100);
         last = now;
 
-        gamestate.itemTypes = 3 + Math.floor(gamestate.itemsSold / LEVEL_COUNT);
+        gamestate.times.running += delta;
 
-        if (now - gamestate.times.sellerCreated > SELLER_INTERVAL) {
+        gamestate.typeCount = Math.min(3 + Math.floor(gamestate.itemsSold / LEVEL_COUNT), ITEMS.length);
+
+        if (gamestate.times.running - gamestate.times.sellerCreated > SELLER_INTERVAL) {
             makeSeller();
         }
 
-        if (now - gamestate.times.buyerCreated > BUYER_INTERVAL) {
+        if (gamestate.times.running - gamestate.times.buyerCreated > BUYER_INTERVAL) {
             makeBuyer();
         }
 
-        updateBuyers(now);
+        updateBuyers(gamestate.times.running);
 
         if (gamestate.lives <= 0) {
             loose();

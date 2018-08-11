@@ -50,7 +50,7 @@ Must have
         X End Game when 5 buyers are lost
         X Score keeping
 
-    - Improved RNG (Tetris RNG)
+    X Improved RNG (Tetris RNG)
     - When one queue head is removed, the others do not change. It is refilled from queue.  
     - Responsive layout
 
