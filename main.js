@@ -61,24 +61,21 @@ window.addEventListener('load', () => {
 
     const ITEMS = [
         { name: 'Apple' },
-        { name: 'Pear' },
-        { name: 'Banana' },
-        { name: 'Orange' },
-        { name: 'Cherry' },
-        { name: 'Tomato' },
-        { name: 'Potato' },
-        { name: 'Plum' },
-        { name: 'Apricot' },
         { name: 'Avocado' },
+        { name: 'Banana' },
+        { name: 'Cherry' },
+        { name: 'Coconut' },
         { name: 'Fig' },
         { name: 'Grape' },
         { name: 'Lemon' },
         { name: 'Mango' },
         { name: 'Melon' },
+        { name: 'Orange' },
+        { name: 'Pear' },
+        { name: 'Pineapple' },
+        { name: 'Plum' },
         { name: 'Pumpkin' },
-        { name: 'Olive' },
-        { name: 'Peach' }
-
+        { name: 'Tomato' }
     ];
 
     for (let i = 0; i < MAX_STORE; i++) {
@@ -346,7 +343,7 @@ window.addEventListener('load', () => {
         const id = `item-${itemIndex++}`;
         const div = document.createElement('div');
         div.classList.add('item');
-        div.textContent = item.name;
+        div.title = item.name;
         div.id = id;
         div.addEventListener('click', ev => {
             clickItem(id);
@@ -355,6 +352,12 @@ window.addEventListener('load', () => {
         div.addEventListener('transitionend', () => maybeRemove(id), { passive: true });
         div.style.top = 0;
         div.style.left = 0;
+
+        const img = document.createElement('img');
+        img.src = `./items/${item.name}.svg`;
+        img.alt = item.name;
+        div.appendChild(img);
+
         gamestate.dom.items.appendChild(div);
 
         return div;
