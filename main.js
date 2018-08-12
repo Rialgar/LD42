@@ -173,16 +173,21 @@ window.addEventListener('load', () => {
 
     getBuyerPosition = buyer => {
         with (styles) {
-            if (buyer.new || buyer.isDropping) {
+            const topRow = queueHeight + 3 * queueMarginV + storeHeight + itemMarginV;
+            if (buyer.new) {
                 buyer.new = false;
                 const leftStatic = queueMarginH + queueItemMarginH;
                 return {
                     x: leftStatic,
                     y: 100
                 }
+            } else if (buyer.isDropping) {
+                return {
+                    x: -itemWidth,
+                    y: topRow
+                }
             } else {
                 const index = gamestate.buyers.indexOf(buyer);
-                const topRow = queueHeight + 3 * queueMarginV + storeHeight + itemMarginV;
                 if (index < ACTIVE_SELLERS) {
                     const leftStatic = queueMarginH + queueActiveItemMarginH;
                     const leftPerIndex = itemWidth + 2 * queueActiveItemMarginH;
@@ -335,6 +340,9 @@ window.addEventListener('load', () => {
         item = gamestate.itemMap[id];
         if (item && (item.isScoring || item.isDropping)) {
             delete gamestate.itemMap[id];
+            if (gamestate.lives <= 0) {
+                loose();
+            }
         }
     }
 
@@ -408,10 +416,18 @@ window.addEventListener('load', () => {
             toRemove.forEach(buyer => {
                 gamestate.upcoming.buyers.push(buyer.item);
                 buyer.isDropping = true;
+
+                const index = gamestate.buyers.indexOf(buyer);
+                gamestate.buyers.splice(index, 1);
+
+                for (let swap = Math.min(gamestate.buyers.length, ACTIVE_BUYERS) - 1; swap > index; swap--) {
+                    const later = gamestate.buyers[swap];
+                    const earlier = gamestate.buyers[swap - 1];
+                    gamestate.buyers[swap] = earlier;
+                    gamestate.buyers[swap - 1] = later;
+                }
             });
             gamestate.upcoming.buyers.shuffle();
-
-            gamestate.buyers = gamestate.buyers.filter(buyer => buyer.left >= 0);
         }
     }
 
@@ -501,10 +517,6 @@ window.addEventListener('load', () => {
 
             updateBuyers(gamestate.times.running);
             updateItems();
-
-            if (gamestate.lives <= 0) {
-                loose();
-            }
 
             gamestate.dom.scores.textContent = gamestate.itemsSold;
             gamestate.dom.lives.textContent = gamestate.lives;

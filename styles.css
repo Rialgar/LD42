@@ -16,26 +16,29 @@ body {
     left: 0;
     bottom: 0;
     right: 0;
+    background-color: black;    
 }
 
 #scores {
     position: absolute;
     text-align: right;
-    top: 0;
-    right: 0;
+    top: 1vh;
+    right: 2vw;
     padding-top: 1vh;
     padding-right: 1vw;
     font-size: 300%;
+    color: white;
 }
 
 #lives {
     position: absolute;
     text-align: left;
-    top: 0;
-    left: 0;
+    top: 59vh;
+    left: 2vw;
     padding-top: 1vh;
     padding-left: 1vw;
     font-size: 300%;
+    color: white;
 }
 
 div.item {
@@ -108,8 +111,8 @@ div.item > img {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
 }
 
