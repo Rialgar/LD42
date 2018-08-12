@@ -1,11 +1,10 @@
-# Title goes here
+# Fruit Vendor
 
 ### Made for LD 42
 
-### No Idea what it will be, yet
+### Buy and sell fruit, but when supply and demand don't line up, you will run out of storage space.
 
-[![Primary Screenshot](https://placehold.it/800x600)](https://rialgar.github.io/LD42/index.xhtml)
-[![Another Screenshot](https://placehold.it/800x600)](https://rialgar.github.io/LD42/index.xhtml)
+[![Primary Screenshot](Screenshot.png)](https://rialgar.github.io/LD42/index.xhtml)
 
 ### [Play here](https://rialgar.github.io/LD42/index.xhtml)
 ### [Rate here](https://ldjam.com/events/ludum-dare/42/)

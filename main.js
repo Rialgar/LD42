@@ -524,13 +524,24 @@ window.addEventListener('load', () => {
         window.requestAnimationFrame(step);
     }
 
-    window.requestAnimationFrame(step);
+    step();
+    paused = true;
+
+    document.getElementById('tut_finished').addEventListener('click', () => {
+        document.getElementById('tutorial').style.display = 'none';
+        paused = false;
+    });
+
+    document.getElementById('pause').addEventListener('click', () => {
+        paused = !paused;
+        document.getElementById('paused').style.display = paused ? 'block' : 'none';
+    });
 
     window.addEventListener('keydown', (ev) => {
-        console.log(ev.key);
         const key = ev.key.toUpperCase();
         if (key === 'P' || key === 'PAUSE') {
             paused = !paused;
+            document.getElementById('paused').style.display = paused ? 'block' : 'none';
             ev.preventDefault();
         }
     })
