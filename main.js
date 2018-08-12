@@ -15,8 +15,11 @@ window.addEventListener('load', () => {
             buyers: document.getElementById('buyers'),
             sellers: document.getElementById('sellers'),
             scores: document.getElementById('scores'),
-            lives: document.getElementById('lives')
+            lives: document.getElementById('lives'),
+            items: document.getElementById('items')
         },
+        itemMap: {},
+
         buyers: [],
         store: [],
         sellers: [],
@@ -65,8 +68,30 @@ window.addEventListener('load', () => {
         { name: 'Lemon' },
         { name: 'Mango' },
         { name: 'Melon' },
-        { name: 'Pumpkin' }
+        { name: 'Pumpkin' },
+        { name: 'Olive' },
+        { name: 'Peach' }
+
     ];
+
+    for (let i = 0; i < MAX_STORE; i++) {
+        const div = document.createElement('div');
+        div.classList.add('item');
+        div.classList.add('empty');
+        gamestate.dom.store.appendChild(div);
+    }
+    for (let i = 0; i < MAX_SELLERS; i++) {
+        const div = document.createElement('div');
+        div.classList.add('item');
+        div.classList.add('empty');
+        gamestate.dom.sellers.appendChild(div);
+    }
+    for (let i = 0; i < MAX_BUYERS; i++) {
+        const div = document.createElement('div');
+        div.classList.add('item');
+        div.classList.add('empty');
+        gamestate.dom.buyers.appendChild(div);
+    }
 
     const getItem = (type) => {
         if (gamestate.upcoming[type].length === 0) {
@@ -97,39 +122,149 @@ window.addEventListener('load', () => {
         return -1;
     };
 
-    const updateQueue = type => {
-        const elements = gamestate.dom[type].children;
-        const queue = gamestate[type];
-        for (let i = 0; i < elements.length; i++) {
-            const el = elements[i];
-            if (i < queue.length) {
-                el.textContent = queue[i].item.name;
-                el.classList.remove('empty');
-                if (typeof (queue[i].left) === 'number') {
-                    const percentage = queue[i].left / BUYER_TIME * 100;
-                    el.style.background = `linear-gradient(white, white ${percentage}%, red ${percentage}%, red)`;
+    const styles = {
+        queueMarginH: 30,
+        itemWidth: 18,
+        queueItemMarginH: 11,
+        queueActiveItemMarginH: 1,
+        storeMarginH: 2,
+        storeItemMarginH: .3,
+
+        queueHeight: 40,
+        queueMarginV: 1,
+        itemHeight: 7,
+        itemMarginV: .5,
+        storeHeight: 16,
+    }
+
+    getSellerPosition = seller => {
+        with (styles) {
+            if (seller.new) {
+                seller.new = false;
+                const leftStatic = queueMarginH + queueItemMarginH;
+                return {
+                    x: leftStatic,
+                    y: -itemHeight
                 }
             } else {
-                el.textContent = '';
-                el.classList.add('empty');
-                el.style.background = '';
+                const index = gamestate.sellers.indexOf(seller);
+                const bottomRow = queueHeight + queueMarginV - itemHeight - itemMarginV;
+                if (index < ACTIVE_SELLERS) {
+                    const leftStatic = queueMarginH + queueActiveItemMarginH;
+                    const leftPerIndex = itemWidth + 2 * queueActiveItemMarginH;
+                    return {
+                        x: leftStatic + leftPerIndex * index,
+                        y: bottomRow
+                    }
+                } else {
+                    const leftStatic = queueMarginH + queueItemMarginH;
+                    const topPerRow = itemHeight + 2 * itemMarginV;
+                    const row = index + 1 - ACTIVE_SELLERS
+                    return {
+                        x: leftStatic,
+                        y: bottomRow - topPerRow * row
+                    }
+                }
             }
         }
     }
 
-    const buyItem = sellerIndex => {
-        if (sellerIndex >= 0 && sellerIndex < ACTIVE_SELLERS && gamestate.sellers[sellerIndex]) {
-            const item = gamestate.sellers[sellerIndex].item;
-            storeIndex = getFreeStoreIndex();
+    getBuyerPosition = buyer => {
+        with (styles) {
+            if (buyer.new || buyer.isDropping) {
+                buyer.new = false;
+                const leftStatic = queueMarginH + queueItemMarginH;
+                return {
+                    x: leftStatic,
+                    y: 100
+                }
+            } else {
+                const index = gamestate.buyers.indexOf(buyer);
+                const topRow = queueHeight + 3 * queueMarginV + storeHeight + itemMarginV;
+                if (index < ACTIVE_SELLERS) {
+                    const leftStatic = queueMarginH + queueActiveItemMarginH;
+                    const leftPerIndex = itemWidth + 2 * queueActiveItemMarginH;
+                    return {
+                        x: leftStatic + leftPerIndex * index,
+                        y: topRow
+                    }
+                } else {
+                    const leftStatic = queueMarginH + queueItemMarginH;
+                    const topPerRow = itemHeight + 2 * itemMarginV;
+                    const row = index + 1 - ACTIVE_SELLERS
+                    return {
+                        x: leftStatic,
+                        y: topRow + topPerRow * row
+                    }
+                }
+            }
+        }
+    }
+
+    getStorePosition = storeEntry => {
+        const index = gamestate.store.indexOf(storeEntry);
+        with (styles) {
+            const x = index > 4 ? index - 5 : index;
+            const y = index > 4 ? 1 : 0;
+            const leftStatic = storeMarginH + storeItemMarginH;
+            const leftPerIndex = itemWidth + 2 * storeItemMarginH;
+            const topRow = queueHeight + 2 * queueMarginV + itemMarginV;
+            const topPerRow = itemHeight + 2 * itemMarginV;
+            return {
+                x: leftStatic + leftPerIndex * x,
+                y: topRow + topPerRow * y
+            }
+        }
+    }
+
+    const updateItems = () => {
+        const elements = Array.prototype.slice.apply(gamestate.dom.items.children);
+        elements.forEach(el => {
+            const data = gamestate.itemMap[el.id];
+            if (!data) {
+                el.parentElement.removeChild(el);
+            } else {
+                let position, background;
+                if (data.isScoring) {
+                    position = {
+                        x: 100,
+                        y: 0
+                    };
+                    background = '';
+                } else if (data.isSeller) {
+                    position = getSellerPosition(data);
+                    background = '';
+                } else if (data.isBuyer) {
+                    position = getBuyerPosition(data);
+                    const percentage = data.left / BUYER_TIME * 100;
+                    background = `linear-gradient(white, white ${percentage}%, red ${percentage}%, red)`;
+                } else if (data.isStore) {
+                    position = getStorePosition(data);
+                    background = '';
+                }
+                el.style.left = `${position.x}vw`;
+                el.style.top = `${position.y}vh`;
+                el.style.background = background;
+            }
+        });
+    }
+
+    const buyItem = seller => {
+        const sellerIndex = gamestate.sellers.indexOf(seller);
+        if (sellerIndex >= 0 && sellerIndex < ACTIVE_SELLERS) {
+            const item = seller.item;
+            const storeIndex = getFreeStoreIndex();
             if (storeIndex >= 0) {
                 gamestate.sellers.splice(sellerIndex, 1);
-                gamestate.store[storeIndex] = item;
+                const storeEntry = {
+                    isStore: true,
+                    item,
+                    dom: seller.dom,
+                    created: gamestate.times.running
+                };
+                gamestate.store[storeIndex] = storeEntry;
                 gamestate.itemsBought++;
                 gamestate.times.bought = gamestate.times.running;
-
-                const itemDom = gamestate.dom.store.children[storeIndex];
-                itemDom.classList.remove('empty');
-                itemDom.textContent = item.name;
 
                 for (let swap = Math.min(gamestate.sellers.length, ACTIVE_SELLERS) - 1; swap > sellerIndex; swap--) {
                     const later = gamestate.sellers[swap];
@@ -137,78 +272,104 @@ window.addEventListener('load', () => {
                     gamestate.sellers[swap] = earlier;
                     gamestate.sellers[swap - 1] = later;
                 }
-                updateQueue('sellers');
+
+                gamestate.itemMap[storeEntry.dom.id] = storeEntry;
             }
         }
     }
 
-    const sellItem = storeIndex => {
-        if (storeIndex >= 0 && storeIndex <= MAX_STORE && gamestate.store[storeIndex]) {
-            const item = gamestate.store[storeIndex];
+    const sellItem = storeEntry => {
+        const storeIndex = gamestate.store.indexOf(storeEntry);
+        if (storeIndex >= 0 && storeIndex <= MAX_STORE && storeEntry) {
+            let oldestMatch = null;
+            let oldestIndex = -1;
             for (let buyerIndex = 0; buyerIndex < ACTIVE_BUYERS; buyerIndex++) {
                 const buyer = gamestate.buyers[buyerIndex];
-                if (buyer && buyer.item === item) {
-                    gamestate.buyers.splice(buyerIndex, 1);
-                    gamestate.store[storeIndex] = null;
-                    gamestate.itemsSold++;
-                    gamestate.times.sold = gamestate.times.running;
-
-                    const itemDom = gamestate.dom.store.children[storeIndex];
-                    itemDom.textContent = '';
-                    itemDom.classList.add('empty');
-
-                    for (let swap = Math.min(gamestate.buyers.length, ACTIVE_BUYERS) - 1; swap > buyerIndex; swap--) {
-                        const later = gamestate.buyers[swap];
-                        const earlier = gamestate.buyers[swap - 1];
-                        gamestate.buyers[swap] = earlier;
-                        gamestate.buyers[swap - 1] = later;
-                    }
-                    updateQueue('buyers');
-                    break;
+                if (buyer && buyer.item === storeEntry.item && (!oldestMatch || oldestMatch.created > buyer.created)) {
+                    oldestMatch = buyer;
+                    oldestIndex = buyerIndex;
                 }
             }
+            if (oldestMatch) {
+                gamestate.buyers.splice(oldestIndex, 1);
+                gamestate.store[storeIndex] = null;
+                gamestate.itemsSold++;
+                gamestate.times.sold = gamestate.times.running;
 
+                for (let swap = Math.min(gamestate.buyers.length, ACTIVE_BUYERS) - 1; swap > oldestIndex; swap--) {
+                    const later = gamestate.buyers[swap];
+                    const earlier = gamestate.buyers[swap - 1];
+                    gamestate.buyers[swap] = earlier;
+                    gamestate.buyers[swap - 1] = later;
+                }
+
+                storeEntry.isScoring = true;
+                oldestMatch.isScoring = true;
+            }
         }
     }
 
-    for (let i = 0; i < MAX_STORE; i++) {
-        const div = document.createElement('div');
-        div.classList.add('item');
-        div.addEventListener('click', (index => () => sellItem(index))(i))
-        gamestate.dom.store.appendChild(div);
+    const clickItem = id => {
+        const target = gamestate.itemMap[id];
+        if (target.isSeller) {
+            buyItem(target);
+        } else if (target.isStore) {
+            sellItem(target);
+        }
     }
-    for (let i = 0; i < MAX_SELLERS; i++) {
-        const div = document.createElement('div');
-        div.classList.add('item');
-        div.addEventListener('click', (index => () => buyItem(index))(i))
-        gamestate.dom.sellers.appendChild(div);
+
+    const maybeRemove = id => {
+        item = gamestate.itemMap[id];
+        if (item && (item.isScoring || item.isDropping)) {
+            delete gamestate.itemMap[id];
+        }
     }
-    for (let i = 0; i < MAX_BUYERS; i++) {
+
+    let itemIndex = 0;
+    const makeItemDom = item => {
+        const id = `item-${itemIndex++}`;
         const div = document.createElement('div');
         div.classList.add('item');
-        gamestate.dom.buyers.appendChild(div);
+        div.textContent = item.name;
+        div.id = id;
+        div.addEventListener('click', () => clickItem(id));
+        div.addEventListener('transitionend', () => maybeRemove(id));
+        div.style.top = 0;
+        div.style.left = 0;
+        gamestate.dom.items.appendChild(div);
+
+        return div;
     }
 
     const makeSeller = () => {
         if (gamestate.sellers.length < MAX_SELLERS) {
+            const item = getItem('sellers');
             const seller = {
-                item: getItem('sellers')
+                isSeller: true,
+                new: true,
+                item,
+                dom: makeItemDom(item),
+                created: gamestate.times.running
             }
+            gamestate.itemMap[seller.dom.id] = seller;
             gamestate.sellers.push(seller);
             gamestate.times.sellerCreated = gamestate.times.running;
-            updateQueue('sellers');
         }
     }
     const makeBuyer = () => {
         if (gamestate.buyers.length < MAX_BUYERS) {
+            const item = getItem('buyers');
             const buyer = {
-                item: getItem('buyers'),
+                isBuyer: true,
+                new: true,
+                item,
+                dom: makeItemDom(item),
                 created: gamestate.times.running,
                 left: BUYER_TIME
             }
+            gamestate.itemMap[buyer.dom.id] = buyer;
             gamestate.buyers.push(buyer);
             gamestate.times.buyerCreated = buyer.created;
-            updateQueue('buyers');
         }
     }
 
@@ -221,13 +382,14 @@ window.addEventListener('load', () => {
         if (toRemove.length > 0) {
             gamestate.lives -= toRemove.length;
 
-            toRemove.forEach(buyer => gamestate.upcoming.buyers.push(buyer.item));
+            toRemove.forEach(buyer => {
+                gamestate.upcoming.buyers.push(buyer.item);
+                buyer.isDropping = true;
+            });
             gamestate.upcoming.buyers.shuffle();
 
             gamestate.buyers = gamestate.buyers.filter(buyer => buyer.left >= 0);
         }
-
-        updateQueue('buyers');
     }
 
     const init = () => {
@@ -252,13 +414,9 @@ window.addEventListener('load', () => {
             running: 0
         }
 
-        updateQueue('sellers');
-        updateQueue('buyers');
-
-        Array.prototype.forEach.call(gamestate.dom.store.children, el => {
-            el.classList.add('empty');
-            el.textContent = '';
-        });
+        while (gamestate.dom.items.childNodes.length > 0) {
+            gamestate.dom.items.removeChild(gamestate.dom.items.firstChild);
+        }
 
         ITEMS.shuffle();
 
@@ -266,6 +424,7 @@ window.addEventListener('load', () => {
             makeSeller();
             makeBuyer();
         }
+        updateItems();
     }
 
     init();
@@ -276,36 +435,47 @@ window.addEventListener('load', () => {
     }
 
     let last = Date.now();
+    let paused = false;
     const step = () => {
         const now = Date.now();
         const delta = Math.min(now - last, 100);
         last = now;
 
-        gamestate.times.running += delta;
+        if (!paused) {
+            gamestate.times.running += delta;
 
-        gamestate.typeCount = Math.min(3 + Math.floor(gamestate.itemsSold / LEVEL_COUNT), ITEMS.length);
+            gamestate.typeCount = Math.min(3 + Math.floor(gamestate.itemsSold / LEVEL_COUNT), ITEMS.length);
 
-        if (gamestate.times.running - gamestate.times.sellerCreated > SELLER_INTERVAL) {
-            makeSeller();
+            if (gamestate.times.running - gamestate.times.sellerCreated > SELLER_INTERVAL) {
+                makeSeller();
+            }
+
+            if (gamestate.times.running - gamestate.times.buyerCreated > BUYER_INTERVAL) {
+                makeBuyer();
+            }
+
+            updateBuyers(gamestate.times.running);
+            updateItems();
+
+            if (gamestate.lives <= 0) {
+                loose();
+            }
+
+            gamestate.dom.scores.textContent = gamestate.itemsSold;
+            gamestate.dom.lives.textContent = gamestate.lives;
         }
-
-        if (gamestate.times.running - gamestate.times.buyerCreated > BUYER_INTERVAL) {
-            makeBuyer();
-        }
-
-        updateBuyers(gamestate.times.running);
-
-        if (gamestate.lives <= 0) {
-            loose();
-        }
-
-        gamestate.dom.scores.textContent = gamestate.itemsSold;
-        gamestate.dom.lives.textContent = gamestate.lives;
-
         window.requestAnimationFrame(step);
     }
 
     window.requestAnimationFrame(step);
+
+    window.addEventListener('keydown', (ev) => {
+        console.log(ev.key);
+        const key = ev.key.toUpperCase();
+        if (key === 'P' || key === 'PAUSE') {
+            paused = !paused;
+        }
+    })
 
     window.debug = gamestate;
 });

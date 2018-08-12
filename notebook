@@ -56,7 +56,9 @@ Must have
 
 Should have
         
-    - Item Transitions / Sell Animation
+    X Item Transitions / Sell Animation
+    X Select Oldest Buyer
+    - Make only clickable items have cursor:pointer
     - Item pictures
     - Remaining lives graphics
     - Score graphics
