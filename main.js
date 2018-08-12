@@ -348,8 +348,11 @@ window.addEventListener('load', () => {
         div.classList.add('item');
         div.textContent = item.name;
         div.id = id;
-        div.addEventListener('click', () => clickItem(id));
-        div.addEventListener('transitionend', () => maybeRemove(id));
+        div.addEventListener('click', ev => {
+            clickItem(id);
+            ev.preventDefault();
+        });
+        div.addEventListener('transitionend', () => maybeRemove(id), { passive: true });
         div.style.top = 0;
         div.style.left = 0;
         gamestate.dom.items.appendChild(div);
@@ -495,6 +498,7 @@ window.addEventListener('load', () => {
         const key = ev.key.toUpperCase();
         if (key === 'P' || key === 'PAUSE') {
             paused = !paused;
+            ev.preventDefault();
         }
     })
 
