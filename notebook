@@ -58,7 +58,7 @@ Should have
         
     X Item Transitions / Sell Animation
     X Select Oldest Buyer
-    - Make only clickable items have cursor:pointer
+    X Make only clickable items have cursor:pointer
     - Item pictures
     - Remaining lives graphics
     - Score graphics

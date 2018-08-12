@@ -452,8 +452,26 @@ window.addEventListener('load', () => {
 
     init();
 
+    const MESSAGES = [
+        { score: 0, message: 'Did you even try?' },
+        { score: 20, message: 'Where you bored and stopped?' },
+        { score: 38, message: 'Below expactations.' },
+        { score: 50, message: 'At least you tried.' },
+        { score: 64, message: 'Getting there.' },
+        { score: 80, message: 'Could be worse.' },
+        { score: 98, message: 'Acceptable.' },
+        { score: 118, message: 'Respectable.' },
+        { score: 142, message: 'Awesome.' },
+        { score: 170, message: 'Astonishingly Amazing!' },
+        { score: 202, message: 'Come on now! This has to be cheating.' },
+    ]
+
     const loose = () => {
-        alert(`You lost, but you successfully resold ${gamestate.itemsSold} items. Press OK to restart.`);
+        let message = '';
+        for (var i = 0; i < MESSAGES.length && MESSAGES[i].score <= gamestate.itemsSold; i++) {
+            message = MESSAGES[i].message;
+        }
+        alert(`You lost. You successfully resold ${gamestate.itemsSold} items. ${message} Press OK to restart.`);
         init();
     }
 
