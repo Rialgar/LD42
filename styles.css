@@ -37,7 +37,7 @@ div.item {
     height: 7vh;
     width: 18vw;
     text-align: center;
-    background-color: white;
+    background-color: gray;
     border: #333333 2px solid;
     white-space: nowrap;
     overflow: hidden;
@@ -46,10 +46,6 @@ div.item {
 
     margin-top: .5vh;
     margin-bottom: .5vh;
-}
-
-div.item.empty {
-    background-color: gray;
 }
 
 #sellers, #buyers {
@@ -107,7 +103,16 @@ div.item.empty {
 
 #items>div.item{
     position: absolute;
-    margin: 0;
-    cursor: pointer;
+    margin: 0;    
     transition: top 250ms, left 250ms;
+    background-color: lightgray;
+}
+
+#items>div.item.clickable{
+    background-color: white;
+    cursor: pointer;
+}
+
+#items>div.item.clickable:hover{
+    background-color: lightblue;
 }

@@ -23,7 +23,14 @@ window.addEventListener('load', () => {
         buyers: [],
         store: [],
         sellers: [],
-        typeCount: 3,
+        typeCount: {
+            buyers: 3,
+            sellers: 3
+        },
+        generationCounts: {
+            buyers: 0,
+            sellers: 0
+        },
         itemsBought: 0,
         itemsSold: 0,
         lives: 5,
@@ -44,7 +51,7 @@ window.addEventListener('load', () => {
 
     const MAX_SELLERS = 6;
     const ACTIVE_SELLERS = 2;
-    const SELLER_INTERVAL = 3 * 1000;
+    const SELLER_INTERVAL = 1 * 1000;
     const MAX_BUYERS = 6;
     const ACTIVE_BUYERS = 2;
     const BUYER_INTERVAL = 3 * 1000;
@@ -77,32 +84,29 @@ window.addEventListener('load', () => {
     for (let i = 0; i < MAX_STORE; i++) {
         const div = document.createElement('div');
         div.classList.add('item');
-        div.classList.add('empty');
         gamestate.dom.store.appendChild(div);
     }
     for (let i = 0; i < MAX_SELLERS; i++) {
         const div = document.createElement('div');
         div.classList.add('item');
-        div.classList.add('empty');
         gamestate.dom.sellers.appendChild(div);
     }
     for (let i = 0; i < MAX_BUYERS; i++) {
         const div = document.createElement('div');
         div.classList.add('item');
-        div.classList.add('empty');
         gamestate.dom.buyers.appendChild(div);
     }
 
     const getItem = (type) => {
         if (gamestate.upcoming[type].length === 0) {
-            const items = ITEMS.slice(0, gamestate.typeCount);
+            const items = ITEMS.slice(0, gamestate.typeCount[type]);
             gamestate.upcoming[type] = items.concat(items);
             gamestate.upcoming[type].shuffle();
-            gamestate.upcoming[type].typeCount = gamestate.typeCount;
+            gamestate.upcoming[type].typeCount = gamestate.typeCount[type];
         }
 
         const upcoming = gamestate.upcoming[type];
-        while (upcoming.typeCount < gamestate.typeCount) {
+        while (upcoming.typeCount < gamestate.typeCount[type]) {
             const newItem = ITEMS[upcoming.typeCount];
             upcoming.push(newItem);
             upcoming.push(newItem);
@@ -110,6 +114,7 @@ window.addEventListener('load', () => {
             upcoming.typeCount++;
         }
 
+        gamestate.generationCounts[type]++;
         return upcoming.pop();
     }
 
@@ -224,7 +229,7 @@ window.addEventListener('load', () => {
             if (!data) {
                 el.parentElement.removeChild(el);
             } else {
-                let position, background;
+                let position, background, clickable = false;
                 if (data.isScoring) {
                     position = {
                         x: 100,
@@ -234,17 +239,28 @@ window.addEventListener('load', () => {
                 } else if (data.isSeller) {
                     position = getSellerPosition(data);
                     background = '';
+                    const index = gamestate.sellers.indexOf(data);
+                    clickable = index >= 0 && index < ACTIVE_SELLERS;
                 } else if (data.isBuyer) {
                     position = getBuyerPosition(data);
-                    const percentage = data.left / BUYER_TIME * 100;
-                    background = `linear-gradient(white, white ${percentage}%, red ${percentage}%, red)`;
+                    const gradientWidth = 50
+                    const percentage = data.left / BUYER_TIME * (100 + 2 * gradientWidth) - gradientWidth
+                    const low = Math.max(0, percentage - gradientWidth);
+                    const high = Math.min(100, percentage + gradientWidth);
+                    background = `linear-gradient(lightgray 0%, lightgray ${low}%, #ff5555 ${high}%, red ${high}%, red 100%)`;
                 } else if (data.isStore) {
                     position = getStorePosition(data);
                     background = '';
+                    clickable = true;
                 }
                 el.style.left = `${position.x}vw`;
                 el.style.top = `${position.y}vh`;
                 el.style.background = background;
+                if (clickable) {
+                    el.classList.add('clickable')
+                } else {
+                    el.classList.remove('clickable')
+                }
             }
         });
     }
@@ -381,6 +397,7 @@ window.addEventListener('load', () => {
         const toRemove = gamestate.buyers.filter(buyer => buyer.left < 0);
         if (toRemove.length > 0) {
             gamestate.lives -= toRemove.length;
+            gamestate.generationCounts['buyers'] -= toRemove.length;
 
             toRemove.forEach(buyer => {
                 gamestate.upcoming.buyers.push(buyer.item);
@@ -396,7 +413,10 @@ window.addEventListener('load', () => {
         gamestate.buyers = [];
         gamestate.store = [];
         gamestate.sellers = [];
-        gamestate.typeCount = 3;
+        gamestate.typeCount = {
+            buyers: 3,
+            sellers: 3
+        }
         gamestate.itemsBought = 0;
         gamestate.itemsSold = 0;
         gamestate.lives = 5;
@@ -444,7 +464,8 @@ window.addEventListener('load', () => {
         if (!paused) {
             gamestate.times.running += delta;
 
-            gamestate.typeCount = Math.min(3 + Math.floor(gamestate.itemsSold / LEVEL_COUNT), ITEMS.length);
+            gamestate.typeCount['sellers'] = Math.min(3 + Math.floor(gamestate.generationCounts['sellers'] / LEVEL_COUNT), ITEMS.length);
+            gamestate.typeCount['buyers'] = Math.max(gamestate.typeCount['buyers'], Math.min(3 + Math.floor(gamestate.generationCounts['buyers'] / LEVEL_COUNT), ITEMS.length));
 
             if (gamestate.times.running - gamestate.times.sellerCreated > SELLER_INTERVAL) {
                 makeSeller();
